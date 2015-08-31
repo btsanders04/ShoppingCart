@@ -59,9 +59,7 @@ public class ShoppingCart extends HttpServlet {
 				+"<br></br>"
 				+ "<img src=\""
 				+ product.getPicture()
-				+ "\" class=\"img-rounded\" alt=\"#\" width=\"304\" height=\"236\">" 
-				+"<form action=\"ProductsList\" method = \"POST\">"
-				+"<button name =\"addCart\" value =\""+product.getProductId()+"\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></form></div></div>";
+				+ "\" class=\"img-rounded\" alt=\"#\" width=\"304\" height=\"236\"></div></div>" ;
 		return display;
 	}
 }

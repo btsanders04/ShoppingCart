@@ -37,6 +37,7 @@ public class ProductsList extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		
 		HttpSession session = request.getSession();
+		boolean loggedIn = (boolean) session.getAttribute("loggedIn");
 		session.setAttribute("shoppingCart", shoppingCart);
 		String display = "";
 		EntityManager em = DBUtil.getEmFactory().createEntityManager();
@@ -45,7 +46,7 @@ public class ProductsList extends HttpServlet {
 				model.Product.class);
 		List<model.Product> products = q.getResultList();
 		for (model.Product p : products) {
-			display += displayProduct(p);
+			display += displayProduct(p,loggedIn);
 		}
 		request.setAttribute("productList", display);
 		getServletContext().getRequestDispatcher("/ProductList.jsp").forward(
@@ -58,12 +59,13 @@ public class ProductsList extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
+		
 		addToCart(Integer.parseInt(request.getParameter("addCart")));
 		System.out.println(shoppingCart.size());
 		doGet(request,response);
 		}
 
-	public String displayProduct(model.Product product) {
+	public String displayProduct(model.Product product, boolean loggedIn) {
 		String display = "<div class = \"container\">"
 				+ "<div style = \"border: 2px solid black\"><h1> "
 				+ product.getName()
@@ -75,9 +77,14 @@ public class ProductsList extends HttpServlet {
 				+ "<img src=\""
 				+ product.getPicture()
 				+ "\" class=\"img-rounded\" alt=\"#\" width=\"304\" height=\"236\">" 
-				+"<form action=\"ProductsList\" method = \"POST\">"
-				+"<button name =\"addCart\" value =\""+product.getProductId()+"\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></form></div></div>";
-		return display;
+				;
+				if (loggedIn){
+				display	+="<form action=\"ProductsList\" method = \"POST\">"
+				+"<button name =\"addCart\" value =\""+product.getProductId()+"\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></form>";
+					
+				}
+				display+="</div></div>";
+					return display;
 	}
 	
 	public void addToCart(int id){
