@@ -45,10 +45,17 @@ public class Confirmation extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
+		model.Userprofile user = (Userprofile) session.getAttribute("User");
+		String display = confirmPurchase(user);
+		request.setAttribute("display", display);
+		getServletContext().getRequestDispatcher("/ShoppingCart.jsp").forward(request, response);
+
+	}
+	
+	public String confirmPurchase(model.Userprofile user){
 		String display = "";
 		double total=0;
 		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		model.Userprofile user = (Userprofile) session.getAttribute("User");
 		String sString = "Select s from Shoppingcart s where s.userId = :uId";
 		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
 				model.Shoppingcart.class);
@@ -67,9 +74,7 @@ public class Confirmation extends HttpServlet {
 			}
 		}
 		display+= "<div class = \"container\"><h1>Your total is : " + total +"</h1>";
-		request.setAttribute("display", display);
-		getServletContext().getRequestDispatcher("/ShoppingCart.jsp").forward(request, response);
-
+		return display;
 	}
 	
 	public String displayProduct(model.Product product, int amount) {

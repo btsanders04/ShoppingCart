@@ -39,15 +39,7 @@ public class ProductsList extends HttpServlet {
 
 		HttpSession session = request.getSession();
 		boolean loggedIn = (boolean)session.getAttribute("loggedIn");
-		String display = "";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		String qString = "SELECT p FROM Product p ORDER BY p.productId ";
-		TypedQuery<model.Product> q = em.createQuery(qString,
-				model.Product.class);
-		List<model.Product> products = q.getResultList();
-		for (model.Product p : products) {
-			display += displayProduct(p, loggedIn);
-		}
+		String display = displayAllProducts(loggedIn);
 		request.setAttribute("productList", display);
 		getServletContext().getRequestDispatcher("/ProductList.jsp").forward(
 				request, response);
@@ -66,7 +58,22 @@ public class ProductsList extends HttpServlet {
 		doGet(request, response);
 	}
 
-	public static String displayProduct(model.Product product, boolean loggedIn) {
+	
+	public String displayAllProducts(boolean loggedIn){
+		String display = "";
+		EntityManager em = DBUtil.getEmFactory().createEntityManager();
+		String qString = "SELECT p FROM Product p ORDER BY p.productId ";
+		TypedQuery<model.Product> q = em.createQuery(qString,
+				model.Product.class);
+		List<model.Product> products = q.getResultList();
+		for (model.Product p : products) {
+			display += displayProduct(p, loggedIn);
+		}
+		return display;
+	}
+	
+	
+	private  String displayProduct(model.Product product, boolean loggedIn) {
 		String display = "<div class = \"container\"> "
 				+ "<div style = \"border: 2px solid black\">"
 				+ "<div class = \"row\"><div class = \"col-sm-2\">"
@@ -81,7 +88,7 @@ public class ProductsList extends HttpServlet {
 		if (loggedIn) {
 			display += "<form action=\"ProductsList\" method = \"POST\">"
 					+ "<div class=\"col-sm-2\"><div class=\"form-group\">"
-					+ "<input type=\"number\"class=\"form-control\" name=\"amount\" id=\"amount\"  min=\"0\">"
+					+ "<input type=\"number\"class=\"form-control\" value=\"0\" name=\"amount\" id=\"amount\"  min=\"0\">"
 					+ "</div></div><div class=\"col-sm-2\"><button name =\"addCart\" value =\""
 					+ product.getProductId()
 					+ "\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></div></form>";

@@ -45,36 +45,8 @@ public class ShoppingCart extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
 		model.Userprofile user = (Userprofile) session.getAttribute("User");
-		String display = "";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		String sString = "Select s from Shoppingcart s where s.userId = :uId";
-		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
-				model.Shoppingcart.class);
-		List<model.Shoppingcart> shoppingCart = shoppingQuery.setParameter(
-				"uId", user.getUserId()).getResultList();
-
-		for (model.Shoppingcart s : shoppingCart) {
-			if (s.getAmount() > 0) {
-				String qString = "SELECT p FROM Product p where p.productId = :id";
-				TypedQuery<model.Product> q = em.createQuery(qString,
-						model.Product.class).setParameter("id",
-						s.getProductId());
-				List<model.Product> products = q.getResultList();
-				if (products.size() > 0) {
-					model.Product p = products.get(0);
-					display += displayProduct(p, s.getAmount());
-				}
-			}
-		}
-
-		if (shoppingCart.size() > 0) {
-
-			display += "<div class=\"container\"><div align=\"right\">"
-					+ "<form role = \"form\" action=\"Confirmation\" method=\"POST\"><button type=\"submit\" class=\"btn btn-default\">CheckOut</button></form>"
-					+ "</form></div></div>";
-		} else {
-			display = "<div class=\"container\"><div align=\"center\"><h1> Sorry You have no items in your Shopping Cart </h1></div></div>";
-		}
+		String display = displayShoppingCart(user);
+		cleanShoppingCart(user.getUserId());
 		request.setAttribute("display", display);
 		getServletContext().getRequestDispatcher("/ShoppingCart.jsp").forward(
 				request, response);
@@ -132,17 +104,18 @@ public class ShoppingCart extends HttpServlet {
 		model.Shoppingcart s = q.getSingleResult();
 		if (s != null) {
 			updateShoppingCart(s, amount);
+			
 		}
-		// else{
-		// }
+		
+		
 	}
 
-	public void updateShoppingCart(model.Shoppingcart s, int amount) {
+	private void updateShoppingCart(model.Shoppingcart s, int amount) {
 		int totalAmount = s.getAmount() - amount;
 		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		EntityTransaction trans = em.getTransaction();
 		trans.begin();
-		if (totalAmount > 0) {
+	//	if (totalAmount > 0) {
 			String qString = "update Shoppingcart s set s.amount = :amount where s.productId = :pId and s.userId = :uId";
 			TypedQuery<model.Shoppingcart> q = em
 					.createQuery(qString, model.Shoppingcart.class)
@@ -158,22 +131,57 @@ public class ShoppingCart extends HttpServlet {
 			} finally {
 				em.close();
 			}
-		} else {
-			try {
-				String qString = "delete from Shoppingcart s where s.userId = :uId and s.productId = :pId";
-				em.createQuery(qString, model.Shoppingcart.class)
-						.setParameter("pId", s.getProductId())
-						.setParameter("uId", s.getUserId()).executeUpdate();
-				System.out.println("REMOVE");
-				//em.remove(s);
-				trans.commit();
-			} catch (Exception e) {
-				trans.rollback();
-			} finally {
-				em.close();
+	}
+
+	public void cleanShoppingCart(long id){
+		EntityManager em = DBUtil.getEmFactory().createEntityManager();
+		EntityTransaction trans = em.getTransaction();
+		trans.begin();
+		try {
+			String qString = "delete from Shoppingcart s where s.userId = :uId and s.amount = 0";
+			em.createQuery(qString, model.Shoppingcart.class)
+					.setParameter("uId", id).executeUpdate();
+			trans.commit();
+		} catch (Exception e) {
+			trans.rollback();
+		} finally {
+			em.close();
+		}
+	}
+		
+	
+	public String displayShoppingCart(model.Userprofile user){
+		String display="";
+		EntityManager em = DBUtil.getEmFactory().createEntityManager();
+		String sString = "Select s from Shoppingcart s where s.userId = :uId";
+		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
+				model.Shoppingcart.class);
+		List<model.Shoppingcart> shoppingCart = shoppingQuery.setParameter(
+				"uId", user.getUserId()).getResultList();
+
+		for (model.Shoppingcart s : shoppingCart) {
+			if (s.getAmount() > 0) {
+				String qString = "SELECT p FROM Product p where p.productId = :id";
+				TypedQuery<model.Product> q = em.createQuery(qString,
+						model.Product.class).setParameter("id",
+						s.getProductId());
+				List<model.Product> products = q.getResultList();
+				if (products.size() > 0) {
+					model.Product p = products.get(0);
+					display += displayProduct(p, s.getAmount());
+				}
 			}
 		}
 
+		if (shoppingCart.size() > 0) {
+
+			display += "<div class=\"container\"><div align=\"right\">"
+					+ "<form role = \"form\" action=\"Confirmation\" method=\"POST\"><button type=\"submit\" class=\"btn btn-default\">CheckOut</button></form>"
+					+ "</form></div></div>";
+		} else {
+			display = "<div class=\"container\"><div align=\"center\"><h1> Sorry You have no items in your Shopping Cart </h1></div></div>";
+		}
+		return display;
 	}
 
 }

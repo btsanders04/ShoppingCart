@@ -35,23 +35,8 @@ public class AllPurchases extends HttpServlet {
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
-		String display = "";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		String sString = "Select s from Shoppingcart s";
-		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
-				model.Shoppingcart.class);
-		List<model.Shoppingcart> shoppingCart = shoppingQuery.getResultList();
-
-		for (model.Shoppingcart s : shoppingCart) {
-			String qString = "SELECT p FROM Product p where p.productId = :id";
-			TypedQuery<model.Product> q = em.createQuery(qString,
-					model.Product.class).setParameter("id", s.getProductId());
-			List<model.Product> products = q.getResultList();
-			if (products.size()>0) {
-				model.Product p = q.getSingleResult();
-				display += displayProduct(p, s.getAmount(), s.getUserId());
-			}
-		}
+		String display = displayShoppingCart();
+		
 		request.setAttribute("display", display);
 		getServletContext().getRequestDispatcher("/ShoppingCart.jsp").forward(
 				request, response);
@@ -66,6 +51,7 @@ public class AllPurchases extends HttpServlet {
 	}
 
 	public String displayProduct(model.Product product, int amount, long id) {
+		
 		String display = "<div class = \"container\"> "
 				+ "<div style = \"border: 2px solid black\">"
 				+ "<div class = \"row\"><div class = \"col-sm-2\">"
@@ -93,6 +79,27 @@ public class AllPurchases extends HttpServlet {
 				model.Userprofile.class).setParameter("id", id);
 		return q.getSingleResult().getUserName();
 
+	}
+	
+	public String displayShoppingCart(){
+		String display="";
+		EntityManager em = DBUtil.getEmFactory().createEntityManager();
+		String sString = "Select s from Shoppingcart s";
+		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
+				model.Shoppingcart.class);
+		List<model.Shoppingcart> shoppingCart = shoppingQuery.getResultList();
+
+		for (model.Shoppingcart s : shoppingCart) {
+			String qString = "SELECT p FROM Product p where p.productId = :id";
+			TypedQuery<model.Product> q = em.createQuery(qString,
+					model.Product.class).setParameter("id", s.getProductId());
+			List<model.Product> products = q.getResultList();
+			if (products.size()>0) {
+				model.Product p = q.getSingleResult();
+				display += displayProduct(p, s.getAmount(), s.getUserId());
+			}
+		}
+		return display;
 	}
 	
 
