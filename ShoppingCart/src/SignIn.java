@@ -3,6 +3,7 @@
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -76,6 +77,8 @@ public class SignIn extends HttpServlet {
 		if(user!=null){
 			session.setAttribute("loggedIn", true);
 			session.setAttribute("User",user);
+			HashMap<Integer,Integer> shoppingCart = new HashMap<Integer,Integer>();
+			session.setAttribute("shoppingCart", shoppingCart);
 			log="<div class=\"container\"><div class=\"alert alert-success\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>"+
 				    "<strong>Success!</strong> You have logged in.</div></div>";
 

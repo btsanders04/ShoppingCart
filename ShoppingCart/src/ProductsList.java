@@ -38,8 +38,8 @@ public class ProductsList extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 
 		HttpSession session = request.getSession();
-		boolean loggedIn = (boolean) session.getAttribute("loggedIn");
-		session.setAttribute("shoppingCart", shoppingCart);
+		shoppingCart = (HashMap<Integer,Integer>)session.getAttribute("shoppingCart");
+		boolean loggedIn = (boolean)session.getAttribute("loggedIn");
 		String display = "";
 		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String qString = "SELECT p FROM Product p ORDER BY p.productId";
