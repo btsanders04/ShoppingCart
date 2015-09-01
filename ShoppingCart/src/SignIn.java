@@ -60,7 +60,6 @@ public class SignIn extends HttpServlet {
 		//System.out.println(sql);
 		HttpSession session = request.getSession();
 		String log="";
-		
 		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String qString= "SELECT u FROM Userprofile u WHERE u.userEmail = :userEmail AND u.userPass = :userPass";
 		TypedQuery<Userprofile> q = em.createQuery(qString, Userprofile.class);
@@ -75,6 +74,8 @@ public class SignIn extends HttpServlet {
 			em.close();
 		}
 		if(user!=null){
+			boolean isAdmin = checkAdmin(user.getUserId());
+			session.setAttribute("admin", isAdmin);
 			session.setAttribute("loggedIn", true);
 			session.setAttribute("User",user);
 			HashMap<Integer,Integer> shoppingCart = new HashMap<Integer,Integer>();
@@ -91,6 +92,18 @@ public class SignIn extends HttpServlet {
     	request.setAttribute("logIn", log);
 		getServletContext().getRequestDispatcher("/index.jsp?logOut=false").forward(request,
 				response);
+	}
+	
+	public boolean checkAdmin(long id){
+		EntityManager em = DBUtil.getEmFactory().createEntityManager();
+		String qString= "SELECT a FROM Admin a WHERE a.userId = :id";
+		TypedQuery<Userprofile> q = em.createQuery(qString, Userprofile.class);
+		q.setParameter("id", id);
+		if(q.getResultList().size()>0){
+			return true;
+		}
+		else return false;
+	
 	}
 	
 	

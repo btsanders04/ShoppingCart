@@ -18,7 +18,7 @@ public class Userprofile implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@SequenceGenerator(name="USERPROFILE_USERID_GENERATOR", sequenceName="SEQ_USERPROFILE")
+	@SequenceGenerator(name="USERPROFILE_USERID_GENERATOR", sequenceName="SEQ_USERPROFILE",  allocationSize = 1, initialValue = 100, schema="TESTDB")
 	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="USERPROFILE_USERID_GENERATOR")
 	@Column(name="USER_ID")
 	private long userId;
@@ -30,6 +30,7 @@ public class Userprofile implements Serializable {
 	@Column(name="JOIN_DATE")
 	private Date joinDate;
 
+	@Column(name="MOTTO")
 	private String motto;
 
 	@Column(name="USER_EMAIL")

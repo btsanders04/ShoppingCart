@@ -34,6 +34,13 @@
 					<%
 						}
 					%>
+					<%
+						if ((Boolean) session.getAttribute("admin")) {
+					%>
+					<li><a href="AllPurchases">All Purchases</a></li>
+					<%	
+						}
+					%>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					<%

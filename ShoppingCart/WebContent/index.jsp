@@ -12,12 +12,15 @@
 	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 <body>
-<%if(session.getAttribute("loggedIn")==null)
+<%if(session.getAttribute("loggedIn")==null){
 		session.setAttribute("loggedIn", false); 
+		session.setAttribute("admin",false);
+}
 
 if(request.getParameter("logOut")!= null){
-	if(request.getParameter("logOut").equals("true"))
-			session.setAttribute("loggedIn",false);}%>
+	if(request.getParameter("logOut").equals("true")){
+			session.setAttribute("admin",false);
+			session.setAttribute("loggedIn",false);}}%>
 <jsp:include page="NavBar.jsp"/>
 
 <div class="container">
