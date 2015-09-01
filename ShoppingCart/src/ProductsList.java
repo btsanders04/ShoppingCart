@@ -1,6 +1,6 @@
-
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -20,7 +20,8 @@ import customTools.DBUtil;
 @WebServlet("/ProductsList")
 public class ProductsList extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private ArrayList<model.Product> shoppingCart = new ArrayList<model.Product>();
+	private HashMap<Integer,Integer> shoppingCart = new HashMap<Integer,Integer>();
+
 	/**
 	 * @see HttpServlet#HttpServlet()
 	 */
@@ -35,7 +36,7 @@ public class ProductsList extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		
+
 		HttpSession session = request.getSession();
 		boolean loggedIn = (boolean) session.getAttribute("loggedIn");
 		session.setAttribute("shoppingCart", shoppingCart);
@@ -46,7 +47,7 @@ public class ProductsList extends HttpServlet {
 				model.Product.class);
 		List<model.Product> products = q.getResultList();
 		for (model.Product p : products) {
-			display += displayProduct(p,loggedIn);
+			display += displayProduct(p, loggedIn);
 		}
 		request.setAttribute("productList", display);
 		getServletContext().getRequestDispatcher("/ProductList.jsp").forward(
@@ -59,41 +60,48 @@ public class ProductsList extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		
-		addToCart(Integer.parseInt(request.getParameter("addCart")));
-		System.out.println(shoppingCart.size());
-		doGet(request,response);
-		}
 
-	public String displayProduct(model.Product product, boolean loggedIn) {
-		String display = "<div class = \"container\">"
-				+ "<div style = \"border: 2px solid black\"><h1> "
-				+ product.getName()
-				+ "</h1><h2>"
-				+ product.getPrice()
-				+ "</h2><p>"
-				+ product.getDescription()
-				+"<br></br>"
-				+ "<img src=\""
-				+ product.getPicture()
-				+ "\" class=\"img-rounded\" alt=\"#\" width=\"304\" height=\"236\">" 
-				;
-				if (loggedIn){
-				display	+="<form action=\"ProductsList\" method = \"POST\">"
-				+"<button name =\"addCart\" value =\""+product.getProductId()+"\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></form>";
-					
-				}
-				display+="</div></div>";
-					return display;
+		addToCart(Integer.parseInt(request.getParameter("addCart")),Integer.parseInt(request.getParameter("amount")));
+		System.out.println(shoppingCart.size());
+		doGet(request, response);
 	}
-	
-	public void addToCart(int id){
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		String qString = "SELECT p FROM Product p where p.productId = :id";
-		TypedQuery<model.Product> q = em.createQuery(qString,
-				model.Product.class).setParameter("id", id);
-		shoppingCart.add(q.getSingleResult());
+
+	public static String displayProduct(model.Product product, boolean loggedIn) {
+		String display = "<div class = \"container\"> "
+				+ "<div style = \"border: 2px solid black\">"
+				+ "<div class = \"row\"><div class = \"col-sm-2\">"
+				+ "<p><a href=\"ProductDetails?ProductId="+product.getProductId()+"\" >" + product.getName()
+				+ "</a></p></div><div class =\"col-sm-2\"><p>"
+				+ product.getPrice() + "</p></div>"
+		/*
+		 * + product.getDescription() +"<br></br>" + "<img src=\"" +
+		 * product.getPicture() +
+		 * "\" class=\"img-rounded\" alt=\"#\" width=\"304\" height=\"236\">"
+		 */;
+		if (loggedIn) {
+			display += "<form action=\"ProductsList\" method = \"POST\">"
+					+ "<div class=\"col-sm-2\"><div class=\"form-group\">"
+					+ "<input type=\"number\"class=\"form-control\" name=\"amount\" id=\"amount\"  min=\"0\">"
+					+ "</div></div><div class=\"col-sm-2\"><button name =\"addCart\" value =\""
+					+ product.getProductId()
+					+ "\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></div></form>";
+
+		}
+		display += "</div></div></div></div>";
+		return display;
 	}
-	
-	
+
+	public void addToCart(int id, int amount) {
+		//EntityManager em = DBUtil.getEmFactory().createEntityManager();
+		//String qString = "SELECT p FROM Product p where p.productId = :id";
+		//TypedQuery<model.Product> q = em.createQuery(qString,
+		//		model.Product.class).setParameter("id", id);
+		//model.Product p = q.getSingleResult();
+		if(shoppingCart.containsKey(id)){
+			amount+=shoppingCart.get(id);
+			shoppingCart.remove(id);
+		}
+		shoppingCart.put(id,amount);
+	}
+
 }
