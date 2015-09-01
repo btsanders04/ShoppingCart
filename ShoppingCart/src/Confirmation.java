@@ -2,6 +2,7 @@
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +55,8 @@ public class Confirmation extends HttpServlet {
 	
 	public String confirmPurchase(model.Userprofile user){
 		String display = "";
-		double total=0;
+		double subTotal=0;
+		double tax = 0.06;
 		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String sString = "Select s from Shoppingcart s where s.userId = :uId";
 		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
@@ -70,10 +72,15 @@ public class Confirmation extends HttpServlet {
 				model.Product p = q.getSingleResult();
 				display += displayProduct(p, s.getAmount());
 				BigDecimal nextTotal = p.getPrice().multiply(new BigDecimal(s.getAmount()));
-				total+=nextTotal.doubleValue();
+				subTotal+=nextTotal.doubleValue();
 			}
 		}
-		display+= "<div class = \"container\"><h1>Your total is : " + total +"</h1>";
+		DecimalFormat f = new DecimalFormat("#0.00");
+		
+		double taxTotal = tax * subTotal;
+		double total = subTotal + taxTotal;
+		
+		display+= "<div class = \"container\"><p>Subtotal : " + f.format(subTotal) +"</p><p>Tax : " + f.format(taxTotal) + "</p><p>Total : " +f.format(total) +"</p>";
 		return display;
 	}
 	
