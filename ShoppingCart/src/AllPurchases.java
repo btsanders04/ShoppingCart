@@ -74,8 +74,7 @@ public class AllPurchases extends HttpServlet {
 
 	public String findUser(long id){
 		String qString = "SELECT u FROM Userprofile u where u.userId = :id";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		TypedQuery<model.Userprofile> q = em.createQuery(qString,
+		TypedQuery<model.Userprofile> q = DBUtil.createQuery(qString,
 				model.Userprofile.class).setParameter("id", id);
 		return q.getSingleResult().getUserName();
 
@@ -83,15 +82,14 @@ public class AllPurchases extends HttpServlet {
 	
 	public String displayShoppingCart(){
 		String display="";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String sString = "Select s from Shoppingcart s";
-		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
+		TypedQuery<model.Shoppingcart> shoppingQuery = DBUtil.createQuery(sString,
 				model.Shoppingcart.class);
 		List<model.Shoppingcart> shoppingCart = shoppingQuery.getResultList();
 
 		for (model.Shoppingcart s : shoppingCart) {
 			String qString = "SELECT p FROM Product p where p.productId = :id";
-			TypedQuery<model.Product> q = em.createQuery(qString,
+			TypedQuery<model.Product> q = DBUtil.createQuery(qString,
 					model.Product.class).setParameter("id", s.getProductId());
 			List<model.Product> products = q.getResultList();
 			if (products.size()>0) {

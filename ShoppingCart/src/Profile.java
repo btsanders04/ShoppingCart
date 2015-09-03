@@ -39,14 +39,12 @@ public class Profile extends HttpServlet {
 		Integer id = Integer.parseInt(request.getParameter("user")); 
 		
 		String profile=printProfile(id);
-		String posts=printPosts(id);
 		// Set response content type
 		response.setContentType("text/html");
 
 		// Actual logic goes here.
 		request.setAttribute("imgLink", imgLink);
 		request.setAttribute("profile", profile);
-		request.setAttribute("posts",posts);
 		getServletContext().getRequestDispatcher("/Profile.jsp").forward(
 				request, response);
 	}
@@ -60,40 +58,11 @@ public class Profile extends HttpServlet {
 		doGet(request, response);
 	}
 	
-	protected String printPosts(int id){
-		String profiles="";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		String qString = "SELECT p FROM Post p where p.userprofile.userId = :id ORDER BY p.postDate desc";
-		//TypedQuery<model.Post> q = em.createQuery(qString, model.Post.class);
-	//	q.setParameter("id", id);
-	/*	List<model.Post> posts = q.getResultList();
-		try {
-			for (model.Post p : posts) {
-
-				profiles += " <div class = \"container\"><div class=\"panel panel-primary\"><div class=\"panel-heading\" style=\"background-color:black\">"
-					+ p.getPostId()
-						+ "</div>"
-						+ " <div class=\"panel-body\"><p > Date: "
-						+  new SimpleDateFormat("MM/dd/yyyy")
-						.format(p.getPostDate())
-						+ "</p><p>"
-						+ p.getDescription()
-						+ "</p><div class=\"col-xs-12 col-md-6\"></div></div></div></div>";
-
-			}
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		return profiles;
-	}
 	
 	protected String printProfile(int id){
 		String profile="";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String qString = "SELECT u FROM Userprofile u where u.userId = :id";
-		TypedQuery<model.Userprofile> q = em.createQuery(qString, model.Userprofile.class);
+		TypedQuery<model.Userprofile> q = DBUtil.createQuery(qString, model.Userprofile.class);
 		q.setParameter("id", id);
 		
 		try{

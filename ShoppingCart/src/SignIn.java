@@ -51,28 +51,16 @@ public class SignIn extends HttpServlet {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	//	DBQuery.openConnection();
 		
 		String email = request.getParameter("email");
 		String pwd = request.getParameter("pwd");
-		//String sql = "select * from userprofile where user_email = '"+email+
-		//		"' and user_pass = '"+pwd+"'";
-		//System.out.println(sql);
+		
 		HttpSession session = request.getSession();
 		String log="";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String qString= "SELECT u FROM Userprofile u WHERE u.userEmail = :userEmail AND u.userPass = :userPass";
-		TypedQuery<Userprofile> q = em.createQuery(qString, Userprofile.class);
+		TypedQuery<Userprofile> q = DBUtil.createQuery(qString, Userprofile.class);
 		q.setParameter("userEmail", email).setParameter("userPass", pwd);
-		Userprofile user = null;
-		try{
-		user = q.getSingleResult();
-		}
-		catch(NoResultException e){
-			System.out.println(e);
-		}finally{
-			em.close();
-		}
+		Userprofile user = q.getSingleResult();
 		if(user!=null){
 			boolean isAdmin = checkAdmin(user.getUserId());
 			session.setAttribute("admin", isAdmin);

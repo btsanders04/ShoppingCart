@@ -31,12 +31,10 @@ public class ProductDetails extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String qString = "SELECT p FROM Product p where p.productId =:id";
-		TypedQuery<model.Product> q = em.createQuery(qString,
-				model.Product.class);
-		model.Product p = q.setParameter("id",
-				Integer.parseInt(request.getParameter("ProductId"))).getSingleResult();
+		TypedQuery<model.Product> q = DBUtil.createQuery(qString,
+				model.Product.class).setParameter("id",Integer.parseInt(request.getParameter("ProductId")));
+		model.Product p = q.getSingleResult();
 		request.setAttribute("display",displayProduct(p));
 		getServletContext().getRequestDispatcher("/ProductDetails.jsp").forward(request, response);
 	}

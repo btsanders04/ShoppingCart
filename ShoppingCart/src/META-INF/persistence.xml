@@ -6,6 +6,7 @@
 		<class>model.Userprofile</class>
 		<class>model.Shoppingcart</class>
 		<class>model.Admin</class>
+		<class>model.CreditInfo</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
 			<property name="javax.persistence.jdbc.url" value="jdbc:oracle:thin:@localhost:1521:xe"/>

@@ -61,14 +61,13 @@ public class ProductsList extends HttpServlet {
 	
 	public String displayAllProducts(boolean loggedIn){
 		String display = "";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String qString = "SELECT p FROM Product p ORDER BY p.productId ";
-		TypedQuery<model.Product> q = em.createQuery(qString,
-				model.Product.class);
-		List<model.Product> products = q.getResultList();
+		TypedQuery<model.Product> tQuery = DBUtil.createQuery(qString,model.Product.class);
+		List<model.Product> products = tQuery.getResultList();
 		for (model.Product p : products) {
 			display += displayProduct(p, loggedIn);
 		}
+		System.out.println();
 		return display;
 	}
 	
@@ -76,7 +75,7 @@ public class ProductsList extends HttpServlet {
 	private  String displayProduct(model.Product product, boolean loggedIn) {
 		String display = "<div class = \"container\"> "
 				+ "<div style = \"border: 2px solid black\">"
-				+ "<div class = \"row\"><div class = \"col-sm-2\">"
+				+ "<br></br><div align=\"center\"> <div class = \"row\"><div class = \"col-sm-2\">"
 				+ "<p><a href=\"ProductDetails?ProductId="+product.getProductId()+"\" >" + product.getName()
 				+ "</a></p></div><div class =\"col-sm-2\"><p>"
 				+ product.getPrice() + "</p></div>"
@@ -94,17 +93,15 @@ public class ProductsList extends HttpServlet {
 					+ "\" type=\"submit\" class=\"btn btn-info\">Add to cart</button></div></form>";
 
 		}
-		display += "</div></div></div></div>";
+		display += "</div><br></br></div></div></div>";
 		return display;
 	}
 
 	public void addToCart(long pId, long uId, int amount) {
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		EntityTransaction trans = em.getTransaction();
+
 		String qString = "select s FROM Shoppingcart s where s.productId = :pId and s.userId = :uId";
-		TypedQuery<model.Shoppingcart> q = em.createQuery(qString,
-				model.Shoppingcart.class).setParameter("pId", pId).setParameter("uId",uId);
-		trans.begin();
+		
+		TypedQuery<model.Shoppingcart> q = DBUtil.createQuery(qString, model.Shoppingcart.class).setParameter("pId", pId).setParameter("uId", uId);
 		model.Shoppingcart s;
 		List<model.Shoppingcart> shop = q.getResultList();
 		if(shop.size()>0){
@@ -116,37 +113,16 @@ public class ProductsList extends HttpServlet {
 			s.setAmount(amount);
 			s.setProductId(pId);
 			s.setUserId(uId);
-			try{
-			em.merge(s);
-			trans.commit();
-			}
-			catch(Exception e){
-			trans.rollback();
-			}
-			finally{
-				em.close();
-			}
-			
+			DBUtil.addToDB(s);	
 		}
 	}
 	
 	public void updateShoppingCart(model.Shoppingcart s, int amount){
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		EntityTransaction trans = em.getTransaction();
 		String qString = "update Shoppingcart s set s.amount = :amount where s.productId = :pId and s.userId = :uId";
-		TypedQuery<model.Shoppingcart> q = em.createQuery(qString,
-				model.Shoppingcart.class).setParameter("pId", s.getProductId()).setParameter("uId",s.getUserId()).setParameter("amount",amount+s.getAmount());
-		trans.begin();
-		try{
-			q.executeUpdate();
-			trans.commit();
-		}
-		catch(Exception e){
-			trans.rollback();
-		}
-		finally{
-			em.close();
-		}
+		TypedQuery<model.Shoppingcart> q = DBUtil.createQuery(qString,model.Shoppingcart.class)
+				.setParameter("pId", s.getProductId())
+				.setParameter("uId",s.getUserId()).setParameter("amount",amount+s.getAmount());
+		DBUtil.updateDB(q);	
 	}
 
 }

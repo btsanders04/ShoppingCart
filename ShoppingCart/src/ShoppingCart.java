@@ -60,7 +60,7 @@ public class ShoppingCart extends HttpServlet {
 			HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession();
 		model.Userprofile user = (Userprofile) session.getAttribute("User");
-
+		
 		removeFromCart(Long.parseLong(request.getParameter("removeCart")),
 				user.getUserId(),
 				Integer.parseInt(request.getParameter("amount")));
@@ -94,17 +94,12 @@ public class ShoppingCart extends HttpServlet {
 	}
 
 	public void removeFromCart(long pId, long uId, int amount) {
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		EntityTransaction trans = em.getTransaction();
 		String qString = "select s FROM Shoppingcart s where s.productId = :pId and s.userId = :uId";
-		TypedQuery<model.Shoppingcart> q = em
-				.createQuery(qString, model.Shoppingcart.class)
+		TypedQuery<model.Shoppingcart> q = DBUtil.createQuery(qString, model.Shoppingcart.class)
 				.setParameter("pId", pId).setParameter("uId", uId);
-		trans.begin();
 		model.Shoppingcart s = q.getSingleResult();
 		if (s != null) {
 			updateShoppingCart(s, amount);
-			
 		}
 		
 		
@@ -112,57 +107,34 @@ public class ShoppingCart extends HttpServlet {
 
 	private void updateShoppingCart(model.Shoppingcart s, int amount) {
 		int totalAmount = s.getAmount() - amount;
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		EntityTransaction trans = em.getTransaction();
-		trans.begin();
 	//	if (totalAmount > 0) {
 			String qString = "update Shoppingcart s set s.amount = :amount where s.productId = :pId and s.userId = :uId";
-			TypedQuery<model.Shoppingcart> q = em
-					.createQuery(qString, model.Shoppingcart.class)
+			TypedQuery<model.Shoppingcart> q = DBUtil.createQuery(qString, model.Shoppingcart.class)
 					.setParameter("pId", s.getProductId())
 					.setParameter("uId", s.getUserId())
 					.setParameter("amount", totalAmount);
-
-			try {
-				q.executeUpdate();
-				trans.commit();
-			} catch (Exception e) {
-				trans.rollback();
-			} finally {
-				em.close();
-			}
+			DBUtil.updateDB(q);
 	}
 
 	public void cleanShoppingCart(long id){
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
-		EntityTransaction trans = em.getTransaction();
-		trans.begin();
-		try {
 			String qString = "delete from Shoppingcart s where s.userId = :uId and s.amount = 0";
-			em.createQuery(qString, model.Shoppingcart.class)
-					.setParameter("uId", id).executeUpdate();
-			trans.commit();
-		} catch (Exception e) {
-			trans.rollback();
-		} finally {
-			em.close();
-		}
+			TypedQuery<model.Shoppingcart> tQuery = DBUtil.createQuery(qString,model.Shoppingcart.class)
+					.setParameter("uId", id);
+			DBUtil.updateDB(tQuery);
 	}
 		
 	
 	public String displayShoppingCart(model.Userprofile user){
 		String display="";
-		EntityManager em = DBUtil.getEmFactory().createEntityManager();
 		String sString = "Select s from Shoppingcart s where s.userId = :uId";
-		TypedQuery<model.Shoppingcart> shoppingQuery = em.createQuery(sString,
-				model.Shoppingcart.class);
-		List<model.Shoppingcart> shoppingCart = shoppingQuery.setParameter(
-				"uId", user.getUserId()).getResultList();
-
+		TypedQuery<model.Shoppingcart> shoppingQuery = DBUtil.createQuery(sString,
+				model.Shoppingcart.class).setParameter(
+						"uId", user.getUserId());
+		List<model.Shoppingcart> shoppingCart = shoppingQuery.getResultList();
 		for (model.Shoppingcart s : shoppingCart) {
 			if (s.getAmount() > 0) {
 				String qString = "SELECT p FROM Product p where p.productId = :id";
-				TypedQuery<model.Product> q = em.createQuery(qString,
+				TypedQuery<model.Product> q = DBUtil.createQuery(qString,
 						model.Product.class).setParameter("id",
 						s.getProductId());
 				List<model.Product> products = q.getResultList();
@@ -176,7 +148,7 @@ public class ShoppingCart extends HttpServlet {
 		if (shoppingCart.size() > 0) {
 
 			display += "<div class=\"container\"><div align=\"right\">"
-					+ "<form role = \"form\" action=\"Confirmation\" method=\"POST\"><button type=\"submit\" class=\"btn btn-default\">CheckOut</button></form>"
+					+ "<form role = \"form\" action=\"Confirmation\" method=\"GET\"><button type=\"submit\" class=\"btn btn-default\">CheckOut</button></form>"
 					+ "</form></div></div>";
 		} else {
 			display = "<div class=\"container\"><div align=\"center\"><h1> Sorry You have no items in your Shopping Cart </h1></div></div>";

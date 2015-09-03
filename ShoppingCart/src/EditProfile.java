@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import customTools.DBUtil;
-
+import javax.persistence.TypedQuery;
 /**
  * Servlet implementation class EditProfile
  */
@@ -73,26 +73,16 @@ public class EditProfile extends HttpServlet {
 				user.setMotto(request.getParameter("motto"));
 			if(!request.getParameter("image").equals(""))
 				user.setImageLink(request.getParameter("image"));
-			EntityManager em = DBUtil.getEmFactory().createEntityManager();
-			EntityTransaction trans = em.getTransaction();
-			trans.begin();
-			Query query = em.createQuery("UPDATE Userprofile u SET u.userName =:name, u.userEmail=:email, u.userPass=:pass," 
-					+ "u.userZipcode = :zip, u.motto = :mot, u.imageLink = :link WHERE u.userId = :id");
+			String q = "UPDATE Userprofile u SET u.userName =:name, u.userEmail=:email, u.userPass=:pass," 
+					+ "u.userZipcode = :zip, u.motto = :mot, u.imageLink = :link WHERE u.userId = :id";
+			TypedQuery<model.Userprofile> query = DBUtil.createQuery(q, model.Userprofile.class);
 			query.setParameter("id", user.getUserId()).setParameter("name", user.getUserName())
 			.setParameter("email",user.getUserEmail()).setParameter("pass",user.getUserPass())
 			.setParameter("link", user.getImageLink())
 			.setParameter("zip",user.getUserZipcode()).setParameter("mot",user.getMotto());
-			try{
-			query.executeUpdate();
-			trans.commit();
-			}catch (Exception e){
-				System.out.println(e);
-				trans.rollback();
-			} finally{
-				em.close();
-			}	
+			DBUtil.updateDB(query);
 			
-				request.setAttribute("alertMessage", "<div class=\"container\"><div class=\"alert alert-success\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>"+
+			request.setAttribute("alertMessage", "<div class=\"container\"><div class=\"alert alert-success\"><a href=\"#\" class=\"close\" data-dismiss=\"alert\" aria-label=\"close\">&times;</a>"+
 				    "<strong>Success!</strong> You have edited your profile.</div></div>");
 			HttpSession session = request.getSession();
 			session.setAttribute("User", user);
